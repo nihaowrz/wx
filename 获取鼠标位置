@@ -1,0 +1,12 @@
+import pyautogui
+import time
+
+def get_mouse_position():
+    time.sleep(3)  # 等待3秒
+    x, y = pyautogui.position()  # 获取鼠标位置
+    return x, y
+
+if __name__ == "__main__":
+    print("请将鼠标移动到想要获取坐标的位置...")
+    position = get_mouse_position()
+    print(f"鼠标当前位置的坐标为：{position}")

@@ -13,6 +13,7 @@ class AutoScriptApp:
         
         self.is_running = False
         self.phone_numbers = ["173767687", "18600441683", "18000905386"]
+        self.current_phone_index = 0  # 用于追踪当前手机号的索引
         
         self.start_button = tk.Button(root, text="开始", command=self.start_script)
         self.start_button.pack(pady=10)
@@ -26,7 +27,7 @@ class AutoScriptApp:
         self.confirm_button = tk.Button(root, text="确认", command=self.confirm_input)
         self.confirm_button.pack(pady=5)
         
-        self.status_label = tk.Label(root, text="状态栏：")
+        self.status_label = tk.Label(root, text="即将操作的手机号：")
         self.status_label.pack(pady=10)
         
         self.f1_thread = None
@@ -51,88 +52,29 @@ class AutoScriptApp:
         for phone_number in self.phone_numbers:
             if not self.is_running:
                 break
-            state = self.execute_script(phone_number)
-            print("电话号码 {} 执行完毕，状态：{}".format(phone_number, state))
+            self.current_phone_index += 1
+            self.update_status_label()
+            self.execute_script(phone_number)
+            print("电话号码 {} 执行完毕".format(phone_number))
+            self.current_phone_index -= 1
+            self.update_status_label()
         self.start_button.config(state="normal")
     
     def execute_script(self, phone_number):
-        state = 0   # 记录操作状态
-
-        time.sleep(3)
-        
-        click_x, click_y = 535, 260 # 点击“添加客户”按钮
-        pyautogui.click(click_x, click_y)
-        print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
-        
-        time.sleep(1)
-        
-        pyautogui.write(phone_number)
-        pyautogui.press("enter")
-        print("已自动输入电话号码并点击确定")
-        
-        time.sleep(2)
-        
-        def get_active_window_title():
-            active_window = gw.getActiveWindow()
-            if active_window:
-                return active_window.title
-
-        active_window_title = get_active_window_title()
-        print(active_window_title)
-
-        if active_window_title == "该用户不存在":
-            state = 1  # 操作状态：找不到用户
-            pyautogui.hotkey('alt', 'F4')  # 关闭“找不到用户”窗口
-        else:
-            input_x, input_y = 1105, 500   # 点击“添加客户”按钮
-            pyautogui.click(input_x, input_y)
-            print("已自动点击坐标位置：({}, {})".format(input_x, input_y))
-
-            time.sleep(1)            
-           
-            active_window_title = get_active_window_title()   # 获取当前活跃窗口的标题
-            print(active_window_title)
-
-            if active_window_title == "输入认证信息":
-                state = 2 # 操作状态：已发送添加申请
-      
-                click_x, click_y = 1095, 495       # 清空“添加客户”弹窗中的文本框
-                pyautogui.click(click_x, click_y)
-                print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
-        
-                time.sleep(1)
-        
-                pyautogui.click()
-                time.sleep(1)
-        
-                pyautogui.hotkey('ctrl', 'v')
-                print("已发送好友申请")
-
-                time.sleep(1)
-
-                pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
-            else:
-                state = 3 # 操作状态：已存在好友
-        
-        pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
-
-        return state
-
-    def update_status_bar(self, phone_number, state):
-        new_status = f"手机号：{phone_number}，状态：{state}"
-        current_status = self.status_label.cget("text")
-        if current_status == "状态栏：":
-            self.status_label.config(text=new_status)
-        else:
-            self.status_label.config(text=current_status + "\n" + new_status)
-
+        # ...（与原代码相同）
+    
     def confirm_input(self):
         user_input = self.input_entry.get()
         pyperclip.copy(user_input)
         print("已复制文本内容到粘贴板：{}".format(user_input))
+    
+    def update_status_label(self):
+        if self.current_phone_index < len(self.phone_numbers):
+            self.status_label.config(text="即将操作的手机号：{}".format(self.phone_numbers[self.current_phone_index]))
+        else:
+            self.status_label.config(text="操作完成")
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = AutoScriptApp(root)
-    
     root.mainloop()

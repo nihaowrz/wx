@@ -1,0 +1,26 @@
+import pyautogui
+import time
+import pywinauto  # 用于Windows上的UI自动化
+
+def click_and_check_popup():
+    # 延迟3秒
+    time.sleep(3)
+    
+    # 获取当前鼠标位置
+    x, y = pyautogui.position()
+    
+    # 模拟鼠标点击
+    pyautogui.click(x, y)
+    
+    # 等待0.5秒，留时间弹窗弹出
+    time.sleep(0.5)
+    
+    # 判断是否有弹窗弹出（示例使用pywinauto库）
+    app = pywinauto.Desktop(backend="uia").window(top_level_only=True)
+    if app.exists():
+        print("发现弹窗！")
+    else:
+        print("未发现弹窗。")
+
+if __name__ == "__main__":
+    click_and_check_popup()

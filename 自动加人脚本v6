@@ -13,6 +13,7 @@ class AutoScriptApp:
         
         self.is_running = False
         self.phone_numbers = ["173767687", "18600441683", "18000905386"]
+        self.status_labels = []
         
         self.start_button = tk.Button(root, text="开始", command=self.start_script)
         self.start_button.pack(pady=10)
@@ -25,10 +26,10 @@ class AutoScriptApp:
         
         self.confirm_button = tk.Button(root, text="确认", command=self.confirm_input)
         self.confirm_button.pack(pady=5)
-
-        self.status_bar = tk.Label(root, text="状态栏", bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        
+        self.status_bar = tk.Label(root, text="", bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
-
+        
         self.f1_thread = None
     
     def start_script(self):
@@ -44,46 +45,48 @@ class AutoScriptApp:
         while self.is_running:
             if keyboard.is_pressed('F1'):
                 self.is_running = False
-                self.f1_thread.join()  # 等待F1线程结束
+                self.f1_thread.join()
                 break
     
     def run_script(self):
-        for phone_number in self.phone_numbers:
+        for idx, phone_number in enumerate(self.phone_numbers):
             if not self.is_running:
                 break
-            self.execute_script(phone_number)
-            self.update_status("电话号码 {} 执行完毕".format(phone_number))
+            self.update_status(idx, "运行中")
+            self.execute_script(phone_number, idx)
+            self.update_status(idx, "完成")
+            print("电话号码 {} 执行完毕".format(phone_number))
         self.start_button.config(state="normal")
-        self.update_status("所有任务已完成")
     
-    def execute_script(self, phone_number):
-        state = 0   # 记录操作状态
+    def execute_script(self, phone_number, idx):
+        state = 0
 
         time.sleep(3)
         
-        click_x, click_y = 535, 260 # 点击“添加客户”按钮
+        click_x, click_y = 535, 260
         pyautogui.click(click_x, click_y)
-        self.update_status("已自动点击坐标位置：({}, {})".format(click_x, click_y))
+        print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
         
-        # ... 以下略，保持原有逻辑
-        
-        self.update_status("操作状态：{}".format(state))
-        pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
+        # 省略后续操作...
+
+        self.update_status(idx, "结束")
     
     def confirm_input(self):
         user_input = self.input_entry.get()
         pyperclip.copy(user_input)
-        self.update_status("已复制文本内容到粘贴板：{}".format(user_input))
+        print("已复制文本内容到粘贴板：{}".format(user_input))
     
-    def update_status(self, message):
-        self.status_bar.config(text=message)
+    def update_status(self, idx, new_status):
+        self.status_labels[idx].config(text=new_status)
+        self.root.update_idletasks()
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = AutoScriptApp(root)
     
-    phone_numbers_text = "\n".join(app.phone_numbers)
-    phone_numbers_label = tk.Label(root, text="手机号列表：\n" + phone_numbers_text)
-    phone_numbers_label.pack(pady=10)
-
+    for phone_number in app.phone_numbers:
+        status_label = tk.Label(root, text="", anchor=tk.W)
+        status_label.pack(fill=tk.X, padx=10, pady=2)
+        app.status_labels.append(status_label)
+    
     root.mainloop()

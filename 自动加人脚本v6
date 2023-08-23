@@ -10,28 +10,30 @@ class AutoScriptApp:
     def __init__(self, root):
         self.root = root
         self.root.title("自动脚本")
-        
+
         self.is_running = False
         self.phone_numbers = ["173767687", "18600441683", "18000905386"]
-        self.current_phone_index = 0  # 用于追踪当前手机号的索引
-        
+
+        self.status_var = tk.StringVar()
+        self.status_var.set("手机号列表: " + ", ".join(self.phone_numbers))
+        self.status_label = tk.Label(root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
+
         self.start_button = tk.Button(root, text="开始", command=self.start_script)
         self.start_button.pack(pady=10)
-        
+
         self.info_label = tk.Label(root, text="按下 F1 键退出程序")
         self.info_label.pack(pady=10)
-        
+
         self.input_entry = tk.Entry(root)
         self.input_entry.pack(pady=10)
-        
+
         self.confirm_button = tk.Button(root, text="确认", command=self.confirm_input)
         self.confirm_button.pack(pady=5)
-        
-        self.status_label = tk.Label(root, text="即将操作的手机号：")
-        self.status_label.pack(pady=10)
-        
+
         self.f1_thread = None
-    
+        self.script_thread = None
+
     def start_script(self):
         if not self.is_running:
             self.is_running = True
@@ -40,41 +42,26 @@ class AutoScriptApp:
             self.script_thread = Thread(target=self.run_script)
             self.script_thread.start()
             self.f1_thread.start()
-    
+
     def check_for_f1(self):
         while self.is_running:
             if keyboard.is_pressed('F1'):
                 self.is_running = False
                 self.f1_thread.join()  # 等待F1线程结束
                 break
-    
+
     def run_script(self):
         for phone_number in self.phone_numbers:
             if not self.is_running:
                 break
-            self.current_phone_index += 1
-            self.update_status_label()
             self.execute_script(phone_number)
             print("电话号码 {} 执行完毕".format(phone_number))
-            self.current_phone_index -= 1
-            self.update_status_label()
         self.start_button.config(state="normal")
-    
-    def execute_script(self, phone_number):
-        # ...（与原代码相同）
-    
-    def confirm_input(self):
-        user_input = self.input_entry.get()
-        pyperclip.copy(user_input)
-        print("已复制文本内容到粘贴板：{}".format(user_input))
-    
-    def update_status_label(self):
-        if self.current_phone_index < len(self.phone_numbers):
-            self.status_label.config(text="即将操作的手机号：{}".format(self.phone_numbers[self.current_phone_index]))
-        else:
-            self.status_label.config(text="操作完成")
+
+    # ... 其他方法不变 ...
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = AutoScriptApp(root)
+
     root.mainloop()

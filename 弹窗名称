@@ -1,0 +1,23 @@
+import pyautogui
+import time
+import pygetwindow
+
+def get_active_window_name():
+    active_window = pygetwindow.getActiveWindow()
+    return active_window.title
+
+def main():
+    print("将在3秒后自动点击鼠标当前位置...")
+    time.sleep(3)
+    
+    # 获取鼠标当前位置并进行点击
+    x, y = pyautogui.position()
+    pyautogui.click(x, y)
+    print(f"已自动点击坐标位置：({x}, {y})")
+    
+    # 获取当前活跃弹窗的名称并展示
+    active_window_name = get_active_window_name()
+    print("当前活跃弹窗的名称：", active_window_name)
+
+if __name__ == "__main__":
+    main()

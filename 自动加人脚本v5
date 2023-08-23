@@ -1,0 +1,128 @@
+import tkinter as tk
+from threading import Thread
+import time
+import pyautogui
+import keyboard
+import pyperclip
+import pygetwindow as gw
+
+class AutoScriptApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("自动脚本")
+        
+        self.is_running = False
+        self.phone_numbers = ["173767687", "18600441683", "18000905386"]
+        
+        self.start_button = tk.Button(root, text="开始", command=self.start_script)
+        self.start_button.pack(pady=10)
+        
+        self.info_label = tk.Label(root, text="按下 F1 键退出程序")
+        self.info_label.pack(pady=10)
+        
+        self.input_entry = tk.Entry(root)
+        self.input_entry.pack(pady=10)
+        
+        self.confirm_button = tk.Button(root, text="确认", command=self.confirm_input)
+        self.confirm_button.pack(pady=5)
+        
+        self.f1_thread = None
+    
+    def start_script(self):
+        if not self.is_running:
+            self.is_running = True
+            self.start_button.config(state="disabled")
+            self.f1_thread = Thread(target=self.check_for_f1)
+            self.script_thread = Thread(target=self.run_script)
+            self.script_thread.start()
+            self.f1_thread.start()
+    
+    def check_for_f1(self):
+        while self.is_running:
+            if keyboard.is_pressed('F1'):
+                self.is_running = False
+                self.f1_thread.join()  # 等待F1线程结束
+                break
+    
+    def run_script(self):
+        for phone_number in self.phone_numbers:
+            if not self.is_running:
+                break
+            self.execute_script(phone_number)
+            print("电话号码 {} 执行完毕".format(phone_number))
+        self.start_button.config(state="normal")
+    
+    def execute_script(self, phone_number):
+        state = 0   # 记录操作状态
+
+        time.sleep(3)
+        
+        click_x, click_y = 535, 260 # 点击“添加客户”按钮
+        pyautogui.click(click_x, click_y)
+        print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
+        
+        time.sleep(1)
+        
+        pyautogui.write(phone_number)
+        pyautogui.press("enter")
+        print("已自动输入电话号码并点击确定")
+        
+        time.sleep(2)
+        
+        def get_active_window_title():
+          active_window = gw.getActiveWindow()
+          if active_window:
+             return active_window.title
+          
+        if __name__ == "__main__":
+          active_window_title = get_active_window_title()
+          print(active_window_title)
+
+          if active_window_title == "该用户不存在":
+            state = 1  # 操作状态：找不到用户
+            pyautogui.hotkey('alt', 'F4')  # 关闭“找不到用户”窗口
+          else :
+            input_x, input_y = 1105, 500   # 点击“添加客户”按钮
+            pyautogui.click(input_x, input_y)
+            print("已自动点击坐标位置：({}, {})".format(input_x, input_y))
+
+            time.sleep(1)            
+           
+            active_window_title = get_active_window_title()   # 获取当前活跃窗口的标题
+            print(active_window_title)
+
+            if active_window_title == "输入认证信息":
+                state = 2 # 操作状态：已发送添加申请
+      
+                click_x, click_y = 1095, 495       # 清空“添加客户”弹窗中的文本框
+                pyautogui.click(click_x, click_y)
+                print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
+        
+                time.sleep(1)
+        
+                pyautogui.click()
+                time.sleep(1)
+        
+                pyautogui.hotkey('ctrl', 'v')
+                print("已发送好友申请")
+
+                time.sleep(1)
+
+                pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
+            else :
+               state = 3 # 操作状态：已存在好友
+        
+        pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
+    
+        print(state)
+
+    def confirm_input(self):
+        user_input = self.input_entry.get()
+        pyperclip.copy(user_input)
+        print("已复制文本内容到粘贴板：{}".format(user_input))
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = AutoScriptApp(root)
+    
+    root.mainloop()

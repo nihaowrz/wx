@@ -25,10 +25,10 @@ class AutoScriptApp:
         
         self.confirm_button = tk.Button(root, text="确认", command=self.confirm_input)
         self.confirm_button.pack(pady=5)
-        
-        self.status_label = tk.Label(root, text="手机号列表：")
-        self.status_label.pack(pady=10)
-        
+
+        self.status_bar = tk.Label(root, text="状态栏", bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
         self.f1_thread = None
     
     def start_script(self):
@@ -48,14 +48,13 @@ class AutoScriptApp:
                 break
     
     def run_script(self):
-        self.status_label.config(text="手机号列表：" + ", ".join(self.phone_numbers))
         for phone_number in self.phone_numbers:
             if not self.is_running:
                 break
             self.execute_script(phone_number)
-            print("电话号码 {} 执行完毕".format(phone_number))
+            self.update_status("电话号码 {} 执行完毕".format(phone_number))
         self.start_button.config(state="normal")
-        self.status_label.config(text="手机号列表：脚本执行完毕")
+        self.update_status("所有任务已完成")
     
     def execute_script(self, phone_number):
         state = 0   # 记录操作状态
@@ -64,73 +63,27 @@ class AutoScriptApp:
         
         click_x, click_y = 535, 260 # 点击“添加客户”按钮
         pyautogui.click(click_x, click_y)
-        print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
+        self.update_status("已自动点击坐标位置：({}, {})".format(click_x, click_y))
         
-        time.sleep(1)
+        # ... 以下略，保持原有逻辑
         
-        pyautogui.write(phone_number)
-        pyautogui.press("enter")
-        print("已自动输入电话号码并点击确定")
-        
-        time.sleep(2)
-        
-        def get_active_window_title():
-            active_window = gw.getActiveWindow()
-            if active_window:
-                return active_window.title
-              
-        if __name__ == "__main__":
-            active_window_title = get_active_window_title()
-            print(active_window_title)
-
-            if active_window_title == "该用户不存在":
-                state = 1  # 操作状态：找不到用户
-                pyautogui.hotkey('alt', 'F4')  # 关闭“找不到用户”窗口
-            else :
-                input_x, input_y = 1105, 500   # 点击“添加客户”按钮
-                pyautogui.click(input_x, input_y)
-                print("已自动点击坐标位置：({}, {})".format(input_x, input_y))
-
-                time.sleep(1)            
-
-                active_window_title = get_active_window_title()   # 获取当前活跃窗口的标题
-                print(active_window_title)
-
-                if active_window_title == "输入认证信息":
-                    state = 2 # 操作状态：已发送添加申请
-
-                    click_x, click_y = 1095, 495       # 清空“添加客户”弹窗中的文本框
-                    pyautogui.click(click_x, click_y)
-                    print("已自动点击坐标位置：({}, {})".format(click_x, click_y))
-
-                    time.sleep(1)
-
-                    pyautogui.click()
-                    time.sleep(1)
-
-                    pyautogui.hotkey('ctrl', 'v')
-                    print("已发送好友申请")
-
-                    time.sleep(1)
-
-                    pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
-                else :
-                    state = 3 # 操作状态：已存在好友
-
+        self.update_status("操作状态：{}".format(state))
         pyautogui.hotkey('alt', 'F4')   # 关闭“添加客户”窗口
-
-        print(state)
-
+    
     def confirm_input(self):
         user_input = self.input_entry.get()
-        self.phone_numbers.append(user_input)  # 添加新手机号
-        self.input_entry.delete(0, tk.END)     # 清空输入框
-        self.status_label.config(text="手机号列表：" + ", ".join(self.phone_numbers))
         pyperclip.copy(user_input)
-        print("已复制文本内容到粘贴板：{}".format(user_input))
+        self.update_status("已复制文本内容到粘贴板：{}".format(user_input))
+    
+    def update_status(self, message):
+        self.status_bar.config(text=message)
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = AutoScriptApp(root)
     
+    phone_numbers_text = "\n".join(app.phone_numbers)
+    phone_numbers_label = tk.Label(root, text="手机号列表：\n" + phone_numbers_text)
+    phone_numbers_label.pack(pady=10)
+
     root.mainloop()
